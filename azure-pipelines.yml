@@ -20,5 +20,10 @@ steps:
 
     sudo mv terraform /usr/local/bin/terraform
 
-- script: terraform version
+    rm -f terraform.zip LICENSE.txt
+
+    echo "Terraform installation completed."
+
+    terraform version
+
   displayName: 'Check Terraform Version'
