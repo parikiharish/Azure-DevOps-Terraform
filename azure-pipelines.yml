@@ -26,4 +26,4 @@ steps:
 
     terraform version
 
-  displayName: 'Check Terraform Version'
+  displayName: 'install Terraform'
