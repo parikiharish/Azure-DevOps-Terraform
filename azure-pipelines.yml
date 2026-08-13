@@ -5,25 +5,29 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+
+
 - bash: |
     set -e
 
     TERRAFORM_VERSION="1.9.8"
+    TMP_DIR="$(mktemp -d)"
 
     echo "Installing Terraform ${TERRAFORM_VERSION}..."
+    echo "Temporary directory: ${TMP_DIR}"
 
     curl -fsSL \
       "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" \
-      -o terraform.zip
+      -o "${TMP_DIR}/terraform.zip"
 
-    unzip -o terraform.zip
+    unzip -o "${TMP_DIR}/terraform.zip" -d "${TMP_DIR}"
 
-    sudo mv terraform /usr/local/bin/terraform
+    sudo install -m 0755 "${TMP_DIR}/terraform" /usr/local/bin/terraform
 
-    rm -f terraform.zip LICENSE.txt
+    rm -rf "${TMP_DIR}"
 
     echo "Terraform installation completed."
 
     terraform version
 
-  displayName: 'install Terraform'
+  displayName: 'Install Terraform'
