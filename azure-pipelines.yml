@@ -1,0 +1,9 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+  - script: terraform version
+    displayName: 'Check Terraform Version'
