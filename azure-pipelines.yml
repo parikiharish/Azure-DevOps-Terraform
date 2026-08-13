@@ -5,5 +5,10 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-  - script: terraform version
-    displayName: 'Check Terraform Version'
+- task: TerraformInstaller@1
+  displayName: 'Install Terraform'
+  inputs:
+    terraformVersion: 'latest'
+
+- script: terraform version
+  displayName: 'Check Terraform Version'
