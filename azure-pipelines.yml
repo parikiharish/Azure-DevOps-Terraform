@@ -35,3 +35,7 @@ steps:
 - bash: |
     terraform init
   displayName: 'Terraform Init'
+
+- bash: |
+    terraform fmt -check -recursive
+  displayName: 'Terraform Format Check'
