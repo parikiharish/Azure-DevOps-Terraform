@@ -31,3 +31,7 @@ steps:
     terraform version
 
   displayName: 'Install Terraform'
+
+-bash: |
+   terraform init
+displayName: 'Terraform Init'
