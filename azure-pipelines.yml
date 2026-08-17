@@ -34,14 +34,17 @@ steps:
 
 - bash: |
     terraform init
+  workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
   displayName: 'Terraform Init'
 
 - bash: |
     terraform fmt -check -recursive
+  workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
   displayName: 'Terraform Format Check'
 
 - bash: |
     terraform validate
+  workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
   displayName: 'Terraform Validate'
 
 - bash: |
