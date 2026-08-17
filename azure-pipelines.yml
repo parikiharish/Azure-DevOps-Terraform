@@ -43,3 +43,8 @@ steps:
 - bash: |
     terraform validate
   displayName: 'Terraform Validate'
+
+- bash: |
+    terraform plan -out=tfplan
+  workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+  displayName: 'Terraform Plan'
