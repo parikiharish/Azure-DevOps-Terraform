@@ -33,31 +33,23 @@ steps:
   displayName: 'Install Terraform'
 
 - task: AzureCLI@2
-  displayName: 'Check WIF Environment'
+  displayName: 'Terraform init'
   inputs:
     azureSubscription: 'Azure-Service-Connection'
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
+    addSpntoEnvironment: true
     inlineScript: |
-      echo "Checking WIF environment..."
+      export ARM_USE_OIDC=true
+      export ARIM_USE_MSI=false
 
-      if [ -n "$idToken" ]; then
-        echo "idToken: AVAILABLE"
-      else
-        echo "idToken: NOT AVAILABLE"
-      fi
+      export ARM_CLIENT_ID=$servicePrincipalId
+      export ARM_TENANT_ID=$tenantId
+      export ARM_SUBSCRIPTION_ID=$subscriptionId
 
-      if [ -n "$servicePrincipalId" ]; then
-        echo "servicePrincipalId: AVAILABLE"
-      else
-        echo "servicePrincipalId: NOT AVAILABLE"
-      fi
+      export ARM_OIDC_TOKEN=$idToken
 
-      if [ -n "$tenantId" ]; then
-        echo "tenantId: AVAILABLE"
-      else
-        echo "tenantId: NOT AVAILABLE"
-      fi
+      terraform init
 
 - bash: |
     terraform fmt -check -recursive
