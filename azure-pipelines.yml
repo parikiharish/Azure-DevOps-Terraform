@@ -33,18 +33,31 @@ steps:
   displayName: 'Install Terraform'
 
 - task: AzureCLI@2
-  displayName: 'Test Azure OIDC Authentication'
+  displayName: 'Check WIF Environment'
   inputs:
     azureSubscription: 'Azure-Service-Connection'
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
     inlineScript: |
-      echo "Service Principal ID is available: ${servicePrincipalId:+YES}"
-      echo "Tenant ID is available: ${tenantId:+YES}"
-      echo "OIDC token is available: ${idToken:+YES}"
+      echo "Checking WIF environment..."
 
-       az account show --query '{subscription:id, tenant:tenantId}' -o table
+      if [ -n "$idToken" ]; then
+        echo "idToken: AVAILABLE"
+      else
+        echo "idToken: NOT AVAILABLE"
+      fi
+
+      if [ -n "$servicePrincipalId" ]; then
+        echo "servicePrincipalId: AVAILABLE"
+      else
+        echo "servicePrincipalId: NOT AVAILABLE"
+      fi
+
+      if [ -n "$tenantId" ]; then
+        echo "tenantId: AVAILABLE"
+      else
+        echo "tenantId: NOT AVAILABLE"
+      fi
 
 - bash: |
     terraform fmt -check -recursive
