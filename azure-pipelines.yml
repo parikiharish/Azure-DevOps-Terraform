@@ -32,10 +32,15 @@ steps:
 
   displayName: 'Install Terraform'
 
-- bash: |
-    terraform init
-  workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+- task: AzureCLI@2
   displayName: 'Terraform Init'
+  inputs:
+    azureSubscription: 'Azure-Service-Connection'
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+    inlineScript: |
+      terraform init
 
 - bash: |
     terraform fmt -check -recursive
