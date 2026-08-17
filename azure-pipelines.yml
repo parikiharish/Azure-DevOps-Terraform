@@ -39,3 +39,7 @@ steps:
 - bash: |
     terraform fmt -check -recursive
   displayName: 'Terraform Format Check'
+
+- bash: |
+    terraform validate
+  displayName: 'Terraform Validate'
