@@ -33,20 +33,18 @@ steps:
   displayName: 'Install Terraform'
 
 - task: AzureCLI@2
-  displayName: 'Terraform Init'
+  displayName: 'Test Azure OIDC Authentication'
   inputs:
     azureSubscription: 'Azure-Service-Connection'
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-    addSpnToEnvironment: true
     inlineScript: |
-      export ARM_CLIENT_ID="$servicePrincipalId"
-      export ARM_TENANT_ID="$tenantId"
-      export ARM_USE_OIDC=true
-      export ARM_USE_AZUREAD=true
-      
-      terraform init
+      echo "Service Principal ID is available: ${servicePrincipalId:+YES}"
+      echo "Tenant ID is available: ${tenantId:+YES}"
+      echo "OIDC token is available: ${idToken:+YES}"
+
+       az account show --query '{subscription:id, tenant:tenantId}' -o table
 
 - bash: |
     terraform fmt -check -recursive
