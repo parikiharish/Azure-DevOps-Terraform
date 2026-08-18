@@ -32,22 +32,17 @@ steps:
 
   displayName: 'Install Terraform'
 
-- task: AzureCLI@2
-  displayName: 'Terraform init'
+- task: TerraformTaskV4@4
+  displayName: 'Terraform Init'
   inputs:
-    azureSubscription: 'Azure-Service-Connection'
-    scriptType: 'bash'
-    scriptLocation: 'inlineScript'
-    addSpnToEnvironment: true
+    provider: 'azurerm'
+    command: 'init'
     workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-    inlineScript: |
-      export ARM_CLIENT_ID=$servicePrincipalId
-      export ARM_OIDC_TOKEN=$servicePrincipalKey
-      export ARM_TENANT_ID=$tenantId
-      export ARM_USE_OIDC=true
-      export ARM_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
-
-      terraform init
+    backendServiceArm: 'Azure-Service-Connection'
+    backendAzureRmResourceGroupName: 'tf-auto-rg'
+    backendAzureRmStorageAccountName: 'terraformazstorage'
+    backendAzureRmContainerName: 'tfazdevops'
+    backendAzureRmKey: 'terraform.tfstate'
 
 - bash: |
     terraform fmt -check -recursive
@@ -59,24 +54,11 @@ steps:
   workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
   displayName: 'Terraform Validate'
 
-- task: AzureCLI@2
+- task: TerraformTaskV4@4
   displayName: 'Terraform Plan'
   inputs:
-    azureSubscription: 'Azure-Service-Connection'
-    scriptType: 'bash'
-    scriptLocation: 'inlineScript'
-    addSpnToEnvironment: true
+    provider: 'azurerm'
+    command: 'plan'
     workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-    inlineScript: |
-      set -e
-      export ARM_USE_OIDC=true
-      export ARM_CLIENT_ID="$servicePrincipalId"
-      export ARM_TENANT_ID="$tenantId"
-      export ARM_SUBSCRIPTION_ID="$subscriptionId"
-      export ARM_OIDC_TOKEN="$id_token"
-
-      # Remote State Backend OIDC Mapping
-      export ARM_USE_AZUREAD=true
-      export ARM_OIDC_AZURE_SERVICE_CONNECTION_ID="$AZURESUBSCRIPTION_SERVICE_CONNECTION_ID"
-
-      terraform plan -out=tfplan
+    environmentServiceNameAzureRM: 'Azure-Service-Connection'
+    commandOptions: '-out=tfplan'
