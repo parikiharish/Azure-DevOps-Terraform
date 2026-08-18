@@ -80,7 +80,7 @@ stages:
         publishLocation: 'pipeline'
 
 - stage: CD
-  displayname: 'Terraform CD'
+  displayName: 'Terraform CD'
   dependsOn: CI
   condition: succeeded()
 
