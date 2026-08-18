@@ -100,6 +100,11 @@ stages:
 
           steps:
 
+          - task: TerraformInstaller@1
+            displayName: 'Install Terraform'
+            inputs:
+              terrformVersion: '1.9.8'
+
           - task: DownloadPipelineArtifact@2
             displayName: 'Download Terraform Plan'
             inputs:
@@ -110,35 +115,6 @@ stages:
               echo "Downloaded Terraform plan:"
               ls -lh "$(Pipeline.Workspace)/terraform-plan"
             displayName: 'Verify Terraform Plan'
-
-          - bash: |
-              set -e
-
-              TERRAFORM_VERSION="1.9.8"
-              TMP_DIR="$(mktemp -d)"
-
-              echo "Installing Terraform ${TERRAFORM_VERSION}..."
-
-              curl -fsSL \
-                "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" \
-                -o "${TMP_DIR}/terraform.zip"
-
-              unzip -o "${TMP_DIR}/terraform.zip" -d "${TMP_DIR}"
-
-              sudo install -m 0755 "${TMP_DIR}/terraform" /usr/local/bin/terraform
-
-              rm -rf "${TMP_DIR}"
-
-              terraform version
-
-            displayName: 'Install Terraform'
-
-          - bash: |
-              set -e
-              which terraform
-              terraform version
-              ls -l /usr/local/bin/terraform
-            displayName: 'Verify Terraform Installation'
 
           - task: TerraformTaskV4@4
             displayName: 'Terraform Init'
