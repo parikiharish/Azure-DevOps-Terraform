@@ -106,23 +106,23 @@ stages:
       displayName: 'Verify Terraform Plan'
 
     - bash: |
-    set -e
+        set -e
 
-    TERRAFORM_VERSION="1.9.8"
-    TMP_DIR="$(mktemp -d)"
+        TERRAFORM_VERSION="1.9.8"
+        TMP_DIR="$(mktemp -d)"
 
-    echo "Installing Terraform ${TERRAFORM_VERSION}..."
+        echo "Installing Terraform ${TERRAFORM_VERSION}..."
 
-    curl -fsSL \
-      "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" \
-      -o "${TMP_DIR}/terraform.zip"
+        curl -fsSL \
+          "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" \
+          -o "${TMP_DIR}/terraform.zip"
 
-    unzip -o "${TMP_DIR}/terraform.zip" -d "${TMP_DIR}"
+        unzip -o "${TMP_DIR}/terraform.zip" -d "${TMP_DIR}"
 
-    sudo install -m 0755 "${TMP_DIR}/terraform" /usr/local/bin/terraform
+        sudo install -m 0755 "${TMP_DIR}/terraform" /usr/local/bin/terraform
 
-    rm -rf "${TMP_DIR}"
+        rm -rf "${TMP_DIR}"
 
-    terraform version
+        terraform version
 
-  displayName: 'Install Terraform'
+      displayName: 'Install Terraform'
