@@ -92,15 +92,15 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
 
-   steps:
+    steps:
 
-   - task: DownloadPipelineArtifact@2
-     displayName: 'Download Terraform Plan'
-     inputs:
-       artifacts: 'terraform-plan'
-       path: '$(Pipeline.Workspace)/terraform-plan'
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download Terraform Plan'
+      inputs:
+        artifacts: 'terraform-plan'
+        path: '$(Pipeline.Workspace)/terraform-plan'
 
-   - bash: |
-       echo "Downloaded Terraform plan:"
-       ls -lh "$(Pipeline.Workspace)/terraform-plan"
-     displayName: 'Verify Terraform Plan'
+    - bash: |
+        echo "Downloaded Terraform plan:"
+        ls -lh "$(Pipeline.Workspace)/terraform-plan"
+      displayName: 'Verify Terraform Plan'
