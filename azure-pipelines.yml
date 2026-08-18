@@ -38,7 +38,7 @@ steps:
     azureSubscription: 'Azure-Service-Connection'
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
-    addSpntoEnvironment: true
+    addSpnToEnvironment: true
     workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
     inlineScript: |
       set -e
