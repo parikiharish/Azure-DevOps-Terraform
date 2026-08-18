@@ -92,7 +92,7 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
 
-    environment: 'terraform-production'
+    environment: terraform-production
 
     steps:
 
