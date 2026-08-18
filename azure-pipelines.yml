@@ -41,8 +41,7 @@ steps:
     addSpnToEnvironment: true
     workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
     inlineScript: |
-      set -e
-
+    
       export ARM_USE_OIDC=true
       export ARM_USE_MSI=false
 
