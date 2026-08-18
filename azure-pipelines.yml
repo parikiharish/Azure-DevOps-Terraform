@@ -78,3 +78,29 @@ stages:
         targetPath: '$(System.DefaultWorkingDirectory)/terraform/tfplan'
         artifact: 'terraform-plan'
         publishLocation: 'pipeline'
+
+- stage: CD
+  displayname: 'Terraform CD'
+  dependsOn: CI
+  condition: succeeded()
+
+  jobs: 
+
+  - job: TerraformCD
+    displayName: 'Terraform CD Job'
+
+    pool:
+      vmImage: 'ubuntu-latest'
+
+   steps:
+
+   - task: DownloadPipelineArtifact@2
+     displayName: 'Download Terraform Plan'
+     inputs:
+       artifacts: 'terraform-plan'
+       path: '$(Pipeline.Workspace)/terraform-plan'
+
+   - bash: |
+       echo "Downloaded Terraform plan:"
+       ls -lh "$(Pipeline.Workspace)/terraform-plan"
+     displayName: 'Verify Terraform Plan'
