@@ -41,18 +41,11 @@ steps:
     addSpnToEnvironment: true
     workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
     inlineScript: |
-      set -e
+      export ARM_CLIENT_ID=$servicePrincipalId
+      export ARM_OIDC_TOKEN=$servicePrincipalKey
+      export ARM_TENANT_ID=$tenantId
       export ARM_USE_OIDC=true
-      export ARM_CLIENT_ID="$servicePrincipalId"
-      export ARM_TENANT_ID="$tenantId"
-      export ARM_SUBSCRIPTION_ID="$subscriptionId"
-      export ARM_OIDC_TOKEN="$id_token"
-
-      #Remote State Backend OIDC Mapping
-      export ARM_USE_AZUREAD=true
-      export ARM_OIDC_AZURE_SERVICE_CONNECTION_ID="$AZURESUBSCRIPTION_SERVICE_CONNECTION_ID"
-      export ARM_OIDC_REQUEST_TOKEN="$(System.AccessToken)"
-      export ARM_OIDC_REQUEST_URL="$(SYSTEM_OIDCREQUESTURI)"
+      export ARM_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
 
       terraform init
 
