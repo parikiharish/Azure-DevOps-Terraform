@@ -51,6 +51,7 @@ steps:
       #Remote State Backend OIDC Mapping
       export ARM_USE_AZUREAD=true
       export ARM_OIDC_AZURE_SERVICE_CONNECTION_ID="$AZURESUBSCRIPTION_SERVICE_CONNECTION_ID"
+      export ARM_SKIP_PROVIDER_REGISTRATION=true
 
       terraform init
 
