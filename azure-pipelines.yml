@@ -86,7 +86,7 @@ stages:
 
   jobs: 
 
-  - job: TerraformCD
+  - deployment: TerraformCD
     displayName: 'Terraform CD Job'
 
     environment: 'terraform-production'
@@ -103,7 +103,7 @@ stages:
           - task: DownloadPipelineArtifact@2
             displayName: 'Download Terraform Plan'
             inputs:
-              artifacts: 'terraform-plan'
+              artifact: 'terraform-plan'
               path: '$(Pipeline.Workspace)/terraform-plan'
 
           - bash: |
