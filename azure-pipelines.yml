@@ -133,6 +133,13 @@ stages:
 
             displayName: 'Install Terraform'
 
+          - bash: |
+              set -e
+              which terraform
+              terraform version
+              ls -l /usr/local/bin/terraform
+            displayName: 'Verify Terraform Installation'
+
           - task: TerraformTaskV4@4
             displayName: 'Terraform Init'
             inputs:
