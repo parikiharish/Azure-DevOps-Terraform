@@ -89,7 +89,7 @@ stages:
   - job: TerraformCD
     displayName: 'Terraform CD Job'
 
-    environment: 'terraform-production'
+    environment: terraform-production
 
     pool:
       vmImage: 'ubuntu-latest'
