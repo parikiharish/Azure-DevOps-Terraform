@@ -62,3 +62,10 @@ steps:
     workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
     environmentServiceNameAzureRM: 'Azure-Service-Connection'
     commandOptions: '-out=tfplan'
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish Terraform Plan Artifact'
+  inputs:
+    targetPath: '$(System.DefaultWorkingDirectory)/terraform/tfplan'
+    artifact: 'terraform-plan'
+    publishLocation: 'pipeline'
