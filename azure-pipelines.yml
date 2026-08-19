@@ -146,13 +146,19 @@ stages:
 
   jobs:
 
-  - job: TerraformApply
-    displayName: 'Terraform Apply Job'
+  - deployment: TerraformApply
+    displayName: 'Terraform Apply'
+
+    environment: 'terraform-production'
 
     pool:
       vmImage: 'ubuntu-latest'
 
-    steps:
-    - bash: |
-        echo "Apply stage reached successfully."
-      displayName: 'Apply Stage Test'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+
+          - bash: |
+              echo "Apply stage approved."
+            displayName: 'Approval Verification'
