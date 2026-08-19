@@ -139,20 +139,20 @@ stages:
         backendAzureRmContainerName: 'tfazdevops'
         backendAzureRmKey: 'terraform.tfstate'
 
-  - stage: Apply
-    displayName: 'Terraform Apply'
-    dependsOn: CD
-    condition: succeeded()
+- stage: Apply
+  displayName: 'Terraform Apply'
+  dependsOn: CD
+  condition: succeeded()
 
-    jobs:
+  jobs:
 
-    - job: TerraformApply
-      displayName: 'Terraform Apply Job'
+  - job: TerraformApply
+    displayName: 'Terraform Apply Job'
 
-      pool:
-        vmImage: 'ubuntu-latest'
+    pool:
+      vmImage: 'ubuntu-latest'
 
-      steps:
-      - bash: |
-          echo "Apply stage reached successfully."
-        displayName: 'Apply Stage Test'
+    steps:
+    - bash: |
+        echo "Apply stage reached successfully."
+      displayName: 'Apply Stage Test'
