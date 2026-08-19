@@ -88,22 +88,11 @@ stages:
 
   - job: TerraformCD
     displayName: 'Terraform CD Job'
-    
+
     pool:
       vmImage: 'ubuntu-latest'
 
     steps:
-
-    - task: DownloadPipelineArtifact@2
-      displayName: 'Download Terraform Plan'
-      inputs:
-        artifact: 'terraform-plan'
-        path: '$(Pipeline.Workspace)/terraform-plan'
-
-    - bash: |
-        echo "Downloaded Terraform plan:"
-        ls -lh "$(Pipeline.Workspace)/terraform-plan"
-      displayName: 'Verify Terraform Plan'
 
     - bash: |
         set -e
@@ -127,12 +116,16 @@ stages:
 
       displayName: 'Install Terraform'
 
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download Terraform Plan'
+      inputs:
+        artifact: 'terraform-plan'
+        path: '$(Pipeline.Workspace)/terraform-plan'
+
     - bash: |
-        set -e
-        which terraform
-        terraform version
-        ls -l /usr/local/bin/terraform
-      displayName: 'Verify Terraform Installation'
+        echo "Downloaded Terraform plan:"
+        ls -lh "$(Pipeline.Workspace)/terraform-plan"
+      displayName: 'Verify Terraform Plan'
 
     - task: TerraformTaskV4@4
       displayName: 'Terraform Init'
