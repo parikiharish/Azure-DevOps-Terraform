@@ -146,69 +146,64 @@ stages:
 
   jobs:
 
-  - deployment: TerraformApply
-    displayName: 'Terraform Apply'
-
-    environment: 'terraform-production'
+  - job: TerraformApply
+    displayName: 'Terraform Apply Job'
 
     pool:
       vmImage: 'ubuntu-latest'
 
-    strategy:
-      runOnce:
-        deploy:
-          steps:
+    steps:
 
-          - bash: |
-              set -e
+    - bash: |
+        set -e
 
-              TERRAFORM_VERSION="1.9.8"
-              TMP_DIR="$(mktemp -d)"
+        TERRAFORM_VERSION="1.9.8"
+        TMP_DIR="$(mktemp -d)"
 
-              echo "Installing Terraform ${TERRAFORM_VERSION}..."
+        echo "Installing Terraform ${TERRAFORM_VERSION}..."
 
-              curl -fsSL \
-                "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" \
-                -o "${TMP_DIR}/terraform.zip"
+        curl -fsSL \
+          "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" \
+          -o "${TMP_DIR}/terraform.zip"
 
-              unzip -o "${TMP_DIR}/terraform.zip" -d "${TMP_DIR}"
+        unzip -o "${TMP_DIR}/terraform.zip" -d "${TMP_DIR}"
 
-              sudo install -m 0755 "${TMP_DIR}/terraform" /usr/local/bin/terraform
+        sudo install -m 0755 "${TMP_DIR}/terraform" /usr/local/bin/terraform
 
-              rm -rf "${TMP_DIR}"
+        rm -rf "${TMP_DIR}"
 
-              terraform version
+        terraform version
 
-            displayName: 'Install Terraform'
+      displayName: 'Install Terraform'
 
-          - task: DownloadPipelineArtifact@2
-            displayName: 'Download Terraform Plan'
-            inputs:
-              artifact: 'terraform-plan'
-              path: '$(Pipeline.Workspace)/terraform-plan'
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download Terraform Plan'
+      inputs:
+        artifact: 'terraform-plan'
+        path: '$(Pipeline.Workspace)/terraform-plan'
 
-          - bash: |
-              echo "Terraform plan:"
-              ls -lh "$(Pipeline.Workspace)/terraform-plan"
-            displayName: 'Verify Terraform Plan'
+    - bash: |
+        echo "Terraform plan:"
+        ls -lh "$(Pipeline.Workspace)/terraform-plan"
+      displayName: 'Verify Terraform Plan'
 
-          - task: TerraformTaskV4@4
-            displayName: 'Terraform Init'
-            inputs:
-              provider: 'azurerm'
-              command: 'init'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-              backendServiceArm: 'Azure-Service-Connection'
-              backendAzureRmResourceGroupName: 'tf-auto-rg'
-              backendAzureRmStorageAccountName: 'terraformazstorage'
-              backendAzureRmContainerName: 'tfazdevops'
-              backendAzureRmKey: 'terraform.tfstate'
+    - task: TerraformTaskV4@4
+      displayName: 'Terraform Init'
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+        backendServiceArm: 'Azure-Service-Connection'
+        backendAzureRmResourceGroupName: 'tf-auto-rg'
+        backendAzureRmStorageAccountName: 'terraformazstorage'
+        backendAzureRmContainerName: 'tfazdevops'
+        backendAzureRmKey: 'terraform.tfstate'
 
-          - task: TerraformTaskV4@4
-            displayName: 'Terraform Apply'
-            inputs:
-              provider: 'azurerm'
-              command: 'apply'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-              environmentServiceNameAzureRM: 'Azure-Service-Connection'
-              commandOptions: '$(Pipeline.Workspace)/terraform-plan/tfplan'
+    - task: TerraformTaskV4@4
+      displayName: 'Terraform Apply'
+      inputs:
+        provider: 'azurerm'
+        command: 'apply'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+        environmentServiceNameAzureRM: 'Azure-Service-Connection'
+        commandOptions: '$(Pipeline.Workspace)/terraform-plan/tfplan'
