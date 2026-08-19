@@ -139,9 +139,36 @@ stages:
         backendAzureRmContainerName: 'tfazdevops'
         backendAzureRmKey: 'terraform.tfstate'
 
+- stage: Approval
+  displayName: 'Terraform Approval'
+  dependsOn: CD
+  condition: succeeded()
+
+  jobs:
+
+  - job: ManualApproval
+    displayName: 'Waiting for Approval'
+    pool: server
+
+    steps:
+
+    - task: ManualValidation@1
+      displayName: 'Approve Terraform Deployment'
+      inputs:
+        notifyUsers: 'John Deva'
+        instructions: |
+          Please review the Terraform plan before approving the deployment.
+
+          CI has generated and published the Terraform plan.
+          CD has downloaded the plan and initialized the backend.
+
+          Approve this validation to allow Terraform Apply to proceed.
+        onTimeout: 'reject'
+        timeoutInMinutes: 1440  # 24 hours        
+
 - stage: Apply
   displayName: 'Terraform Apply'
-  dependsOn: CD
+  dependsOn: Approval
   condition: succeeded()
 
   jobs:
