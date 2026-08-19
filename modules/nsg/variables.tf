@@ -15,7 +15,7 @@ variable "location" {
 
 variable "security_rules" {
   description = "A list of security rules to be applied to the Network Security Group."
-  type        = list(object({
+  type = list(object({
     name                       = string
     priority                   = number
     direction                  = string

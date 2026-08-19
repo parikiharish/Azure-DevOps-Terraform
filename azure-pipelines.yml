@@ -1,0 +1,236 @@
+trigger:
+- main
+
+stages:
+
+- stage: CI
+  displayName: 'Terraform CI'
+
+  jobs:
+
+  - job: TerraformCI
+    displayName: 'Terraform CI Job'
+
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+
+    - bash: |
+        set -e
+
+        TERRAFORM_VERSION="1.9.8"
+        TMP_DIR="$(mktemp -d)"
+
+        echo "Installing Terraform ${TERRAFORM_VERSION}..."
+        echo "Temporary directory: ${TMP_DIR}"
+
+        curl -fsSL \
+          "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" \
+          -o "${TMP_DIR}/terraform.zip"
+
+        unzip -o "${TMP_DIR}/terraform.zip" -d "${TMP_DIR}"
+
+        sudo install -m 0755 "${TMP_DIR}/terraform" /usr/local/bin/terraform
+
+        rm -rf "${TMP_DIR}"
+
+        echo "Terraform installation completed."
+
+        terraform version
+
+      displayName: 'Install Terraform'
+
+    - task: TerraformTaskV4@4
+      displayName: 'Terraform Init'
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+        backendServiceArm: 'Azure-Service-Connection'
+        backendAzureRmResourceGroupName: 'tf-auto-rg'
+        backendAzureRmStorageAccountName: 'terraformazstorage'
+        backendAzureRmContainerName: 'tfazdevops'
+        backendAzureRmKey: 'terraform.tfstate'
+
+    - bash: |
+        terraform fmt -check -recursive
+      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+      displayName: 'Terraform Format Check'
+
+    - bash: |
+        terraform validate
+      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+      displayName: 'Terraform Validate'
+
+    - task: TerraformTaskV4@4
+      displayName: 'Terraform Plan'
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+        environmentServiceNameAzureRM: 'Azure-Service-Connection'
+        commandOptions: '-out=tfplan'
+
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish Terraform Plan Artifact'
+      inputs:
+        targetPath: '$(System.DefaultWorkingDirectory)/terraform/tfplan'
+        artifact: 'terraform-plan'
+        publishLocation: 'pipeline'
+
+- stage: CD
+  displayName: 'Terraform CD'
+  dependsOn: CI
+  condition: succeeded()
+
+  jobs:
+
+  - job: TerraformCD
+    displayName: 'Terraform CD Job'
+
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+
+    - bash: |
+        set -e
+
+        TERRAFORM_VERSION="1.9.8"
+        TMP_DIR="$(mktemp -d)"
+
+        echo "Installing Terraform ${TERRAFORM_VERSION}..."
+
+        curl -fsSL \
+          "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" \
+          -o "${TMP_DIR}/terraform.zip"
+
+        unzip -o "${TMP_DIR}/terraform.zip" -d "${TMP_DIR}"
+
+        sudo install -m 0755 "${TMP_DIR}/terraform" /usr/local/bin/terraform
+
+        rm -rf "${TMP_DIR}"
+
+        terraform version
+
+      displayName: 'Install Terraform'
+
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download Terraform Plan'
+      inputs:
+        artifact: 'terraform-plan'
+        path: '$(Pipeline.Workspace)/terraform-plan'
+
+    - bash: |
+        echo "Downloaded Terraform plan:"
+        ls -lh "$(Pipeline.Workspace)/terraform-plan"
+      displayName: 'Verify Terraform Plan'
+
+    - task: TerraformTaskV4@4
+      displayName: 'Terraform Init'
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+        backendServiceArm: 'Azure-Service-Connection'
+        backendAzureRmResourceGroupName: 'tf-auto-rg'
+        backendAzureRmStorageAccountName: 'terraformazstorage'
+        backendAzureRmContainerName: 'tfazdevops'
+        backendAzureRmKey: 'terraform.tfstate'
+
+- stage: Approval
+  displayName: 'Terraform Approval'
+  dependsOn: CD
+  condition: succeeded()
+
+  jobs:
+
+  - job: ManualApproval
+    displayName: 'Waiting for Approval'
+    pool: server
+
+    steps:
+
+    - task: ManualValidation@1
+      displayName: 'Approve Terraform Deployment'
+      inputs:
+        notifyUsers: 'John Deva'
+        instructions: |
+          Please review the Terraform plan before approving the deployment.
+
+          CI has generated and published the Terraform plan.
+          CD has downloaded the plan and initialized the backend.
+
+          Approve this validation to allow Terraform Apply to proceed.
+        onTimeout: 'reject'
+        timeoutInMinutes: 1440  # 24 hours        
+
+- stage: Apply
+  displayName: 'Terraform Apply'
+  dependsOn: Approval
+  condition: succeeded()
+
+  jobs:
+
+  - job: TerraformApply
+    displayName: 'Terraform Apply Job'
+
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+
+    - bash: |
+        set -e
+
+        TERRAFORM_VERSION="1.9.8"
+        TMP_DIR="$(mktemp -d)"
+
+        echo "Installing Terraform ${TERRAFORM_VERSION}..."
+
+        curl -fsSL \
+          "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" \
+          -o "${TMP_DIR}/terraform.zip"
+
+        unzip -o "${TMP_DIR}/terraform.zip" -d "${TMP_DIR}"
+
+        sudo install -m 0755 "${TMP_DIR}/terraform" /usr/local/bin/terraform
+
+        rm -rf "${TMP_DIR}"
+
+        terraform version
+
+      displayName: 'Install Terraform'
+
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download Terraform Plan'
+      inputs:
+        artifact: 'terraform-plan'
+        path: '$(Pipeline.Workspace)/terraform-plan'
+
+    - bash: |
+        echo "Terraform plan:"
+        ls -lh "$(Pipeline.Workspace)/terraform-plan"
+      displayName: 'Verify Terraform Plan'
+
+    - task: TerraformTaskV4@4
+      displayName: 'Terraform Init'
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+        backendServiceArm: 'Azure-Service-Connection'
+        backendAzureRmResourceGroupName: 'tf-auto-rg'
+        backendAzureRmStorageAccountName: 'terraformazstorage'
+        backendAzureRmContainerName: 'tfazdevops'
+        backendAzureRmKey: 'terraform.tfstate'
+
+    - task: TerraformTaskV4@4
+      displayName: 'Terraform Apply'
+      inputs:
+        provider: 'azurerm'
+        command: 'apply'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+        environmentServiceNameAzureRM: 'Azure-Service-Connection'
+        commandOptions: '$(Pipeline.Workspace)/terraform-plan/tfplan'
