@@ -2,10 +2,18 @@ resource "azurerm_network_security_group" "nsg1" {
   name                = var.nsg_name
   location            = var.location
   resource_group_name = var.resource_group_name
+
+  tags = {
+    environment = "dev"
+    project     = "azure-devops-terraform"
+    managed_by  = "terraform"
+  }
 }
 
 resource "azurerm_network_security_rule" "nsg1_rule" {
-  for_each = { for rule in var.security_rules : rule.name => rule }
+  for_each = {
+    for rule in var.security_rules : rule.name => rule
+  }
 
   name                        = each.value.name
   priority                    = each.value.priority
