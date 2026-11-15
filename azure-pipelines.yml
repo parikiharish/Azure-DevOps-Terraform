@@ -83,6 +83,7 @@ stages:
 # ==========================================
 # STAGE 2: TERRAFORM CD - REVIEW PLAN
 # ==========================================
+
 - stage: CD
   displayName: 'Terraform CD - Plan Review'
   dependsOn: CI
@@ -120,14 +121,29 @@ stages:
         artifact: 'terraform-plan'
         path: '$(Pipeline.Workspace)/terraform-plan'
 
-    - bash: |
-        set -e
+    - task: AzureCLI@2
+      displayName: 'Initialize Backend and Display Terraform Plan'
+      inputs:
+        azureSubscription: '$(azureServiceConnection)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        addSpnToEnvironment: true
+        inlineScript: |
+          set -euo pipefail
 
-        echo "Reviewing Terraform deployment plan..."
+          export ARM_CLIENT_ID="$servicePrincipalId"
+          export ARM_TENANT_ID="$tenantId"
+          export ARM_SUBSCRIPTION_ID="$(azureSubscriptionId)"
+          export ARM_OIDC_TOKEN="$idToken"
+          export ARM_USE_OIDC=true
+          export ARM_USE_AZUREAD=true
 
-        terraform show -no-color \
-          "$(Pipeline.Workspace)/terraform-plan/tfplan"
-      displayName: 'Display Terraform Plan'
+          terraform -chdir=terraform init \
+            -input=false \
+            -reconfigure
+
+          terraform -chdir=terraform show -no-color \
+            "$(Pipeline.Workspace)/terraform-plan/tfplan"
 
 
 # ==========================================
