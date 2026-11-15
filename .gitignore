@@ -29,4 +29,9 @@ override.tf.json
 *.pfx
 *.credentials
 .vscode/
+
+# Temporary files
+*.log
+terraform-staged-changes.patch
+
 '@ | Set-Content .gitignore
