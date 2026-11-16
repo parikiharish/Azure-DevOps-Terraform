@@ -1,6 +1,6 @@
 
 trigger:
-  - main
+  - None
 
 variables:
   terraformVersion: '1.9.8'
